@@ -1,6 +1,7 @@
 import { PALETTES } from "../model/settings";
 import type { PaletteId, VisualSettings } from "../model/types";
 import { SectionHeading, Toggle } from "./controls";
+import { ColorControl } from "./color-control";
 
 interface VisualPanelProps {
   settings: VisualSettings;
@@ -20,7 +21,9 @@ export function VisualPanel({ settings, onChange }: VisualPanelProps) {
             key={id}
             className={`palette-option ${settings.palette === id ? "is-selected" : ""}`}
             aria-pressed={settings.palette === id}
-            onClick={() => onChange({ palette: id as PaletteId })}
+            onClick={() =>
+              onChange({ palette: id as PaletteId, globalColor: null })
+            }
           >
             <span className="palette-dots">
               {palette.colors.slice(0, 4).map((color) => (
@@ -31,6 +34,7 @@ export function VisualPanel({ settings, onChange }: VisualPanelProps) {
           </button>
         ))}
       </div>
+      <ColorControl settings={settings} onChange={onChange} />
       <label className="range-field">
         <span>
           可视时间窗 <output>{settings.lookAhead.toFixed(1)} 秒</output>
@@ -73,11 +77,28 @@ export function VisualPanel({ settings, onChange }: VisualPanelProps) {
           onChange={(particles) => onChange({ particles })}
         />
         <Toggle
-          label="标题与时间"
+          label="显示标题与页脚"
           checked={settings.labels}
           onChange={(labels) => onChange({ labels })}
         />
       </div>
+      <label className="range-field">
+        <span>
+          粒子强度 <output>{settings.particleIntensity.toFixed(1)}×</output>
+        </span>
+        <input
+          aria-label="粒子强度"
+          type="range"
+          min="0.5"
+          max="2.5"
+          step="0.1"
+          value={settings.particleIntensity}
+          disabled={!settings.particles}
+          onChange={(event) =>
+            onChange({ particleIntensity: Number(event.target.value) })
+          }
+        />
+      </label>
       <div className="offset-control">
         <div>
           <label htmlFor="midi-offset">MIDI 时间偏移</label>

@@ -1,0 +1,123 @@
+.global-color-control {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: -5px 0 20px;
+}
+.global-color-control label {
+  margin-right: auto;
+  font-size: 10px;
+}
+.global-color-control small {
+  display: block;
+  color: var(--o-color-text-muted);
+  margin-top: 3px;
+  font-size: 9px;
+}
+.global-color-control input[type="color"] {
+  width: 32px;
+  height: 29px;
+  padding: 2px;
+  border: 1px solid var(--o-color-border);
+  background: var(--o-color-surface);
+  border-radius: 6px;
+  cursor: pointer;
+}
+.caption-fields {
+  display: grid;
+  gap: 15px;
+  margin-bottom: 18px;
+}
+.caption-fields label {
+  font-size: 10px;
+}
+.caption-fields label > span {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 7px;
+}
+.caption-fields input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--o-color-border);
+  border-radius: 6px;
+  background: var(--o-color-surface);
+  color: var(--o-color-text);
+  font-size: 10px;
+}
+.caption-fields input::placeholder {
+  color: var(--o-color-text-muted);
+}
+.bpm-status {
+  margin-top: 15px;
+  border-top: 1px solid var(--o-color-border);
+  padding-top: 12px;
+  font-size: 10px;
+}
+.bpm-status > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+.bpm-status strong {
+  font-weight: 500;
+}
+.bpm-status p,
+.bpm-status > small {
+  color: var(--o-color-text-muted);
+  font-size: 9px;
+  line-height: 1.7;
+}
+.bpm-status progress {
+  display: block;
+  width: 100%;
+  height: 5px;
+  margin-top: 10px;
+  accent-color: var(--o-color-info);
+}
+.bpm-status .field-error {
+  color: var(--o-color-danger);
+}
+.bpm-curve {
+  display: block;
+  width: 100%;
+  height: 64px;
+  color: var(--o-color-info);
+  margin: 10px 0;
+  background: var(--o-color-surface-subtle);
+  border-radius: 6px;
+}
+.bpm-status details {
+  margin-top: 10px;
+  color: var(--o-color-text-muted);
+  font-size: 9px;
+}
+.bpm-status summary {
+  cursor: pointer;
+}
+.bpm-segment-list {
+  max-height: 150px;
+  overflow-y: auto;
+  padding-top: 8px;
+}
+.bpm-segment-list > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 3px 0;
+  font-family: var(--o-font-mono);
+}
+@media (max-width: 720px) {
+  .tempo-fieldset {
+    grid-row: 7;
+  }
+  .caption-fieldset {
+    grid-row: 8;
+  }
+  .below-preview {
+    grid-row: 9;
+  }
+}

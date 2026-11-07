@@ -7,6 +7,10 @@ import {
 } from "../../src/features/studio/midi/parse-midi";
 import { queryNotes } from "../../src/features/studio/midi/query-notes";
 import type { MidiNote } from "../../src/features/studio/model/types";
+import {
+  bpmAtTime,
+  timeToBeat,
+} from "../../src/features/studio/tempo/tempo-map";
 
 function fixture() {
   const midi = new Midi();
@@ -41,6 +45,33 @@ describe("MIDI import and temporal queries", () => {
     });
     expect(project.tracks[0]).toMatchObject({ name: "Piano", noteCount: 2 });
     expect(project.maxEnds).toEqual([20, 20]);
+  });
+  it("reads tempo changes from actual MIDI bytes and applies them to a sustained note", () => {
+    const midi = new Midi();
+    const ppq = midi.header.ppq;
+    midi.header.tempos = [
+      { ticks: 0, bpm: 120 },
+      { ticks: ppq * 4, bpm: 60 },
+    ];
+    midi.header.update();
+    midi.addTrack().addNote({
+      midi: 60,
+      ticks: ppq * 3,
+      durationTicks: ppq * 3,
+      velocity: 1,
+    });
+    const project = parseMidi(
+      midi.toArray().buffer as ArrayBuffer,
+      "native-tempo.mid",
+    );
+    expect(project.tempoEventCount).toBe(2);
+    expect(project.tempoMap).toEqual([
+      { time: 0, beat: 0, bpm: 120 },
+      { time: 2, beat: 4, bpm: 60 },
+    ]);
+    expect(project.notes[0].start).toBe(1.5);
+    expect(project.notes[0].duration).toBe(2.5);
+    expect(bpmAtTime(3, project.tempoMap)).toBe(60);
   });
   it("finds sustained notes after later short notes have ended", () => {
     const project = fixture();
@@ -83,6 +114,37 @@ describe("MIDI import and temporal queries", () => {
       expect(project.notes.length).toBe(39406);
       expect(project.duration).toBeCloseTo(3677.77, 1);
       expect(queryNotes(project, 1800, 1805).length).toBeGreaterThan(0);
+      const raw = new Midi(bytes);
+      expect(project.tempoEventCount).toBe(20924);
+      expect(project.tempoMap.length).toBeGreaterThan(20000);
+      expect(bpmAtTime(0, project.tempoMap)).toBe(64);
+      expect(bpmAtTime(300, project.tempoMap)).toBeCloseTo(90, 3);
+      expect(bpmAtTime(2400, project.tempoMap)).toBeCloseTo(119.132950387, 6);
+      let maxBeatError = 0;
+      for (const tempo of raw.header.tempos) {
+        maxBeatError = Math.max(
+          maxBeatError,
+          Math.abs(
+            timeToBeat(tempo.time ?? 0, project.tempoMap) -
+              tempo.ticks / raw.header.ppq,
+          ),
+        );
+      }
+      for (const track of raw.tracks)
+        for (const note of track.notes) {
+          maxBeatError = Math.max(
+            maxBeatError,
+            Math.abs(
+              timeToBeat(note.time, project.tempoMap) -
+                note.ticks / raw.header.ppq,
+            ),
+            Math.abs(
+              timeToBeat(note.time + note.duration, project.tempoMap) -
+                (note.ticks + note.durationTicks) / raw.header.ppq,
+            ),
+          );
+        }
+      expect(maxBeatError).toBeLessThan(0.000001);
     },
   );
 });

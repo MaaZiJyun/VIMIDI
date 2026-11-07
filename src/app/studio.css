@@ -6,3 +6,5 @@
 @import "./styles/export.css";
 @import "./styles/tracks.css";
 @import "./styles/responsive.css";
+@import "./styles/tempo-captions.css";
+@import "./styles/midi-tempo.css";

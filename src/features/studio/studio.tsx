@@ -22,6 +22,11 @@ import { useExport } from "./hooks/use-export";
 import { DEFAULT_EXPORT, DEFAULT_VISUALS, formatTime } from "./model/settings";
 import type { ExportSettings, VisualSettings } from "./model/types";
 import { supportsDirectSave } from "./export/output-target";
+import { CaptionPanel } from "./components/caption-panel";
+import { AutoBpmPanel } from "./components/auto-bpm-panel";
+import { useAutoBpm } from "./hooks/use-auto-bpm";
+import { bpmAtTime, beatToTime, timeToBeat } from "./tempo/tempo-map";
+import { MidiTempoPanel } from "./components/midi-tempo-panel";
 
 const subscribe = () => () => {};
 
@@ -29,6 +34,8 @@ export function Studio() {
   const source = useProject();
   const transport = useTransport(source.audio);
   const exporter = useExport();
+  const autoBpm = useAutoBpm(source.audio, source.project);
+  const playbackProject = autoBpm.project;
   const [visuals, setVisuals] = useState<VisualSettings>(DEFAULT_VISUALS);
   const [exportOptions, setExportOptions] = useState<Partial<ExportSettings>>(
     {},
@@ -47,6 +54,21 @@ export function Studio() {
     ...exportOptions,
   };
   const locked = !!exporter.progress;
+  const bpm = playbackProject
+    ? bpmAtTime(transport.time - visuals.offset, playbackProject.tempoMap)
+    : 120;
+  const midiTime =
+    source.project && playbackProject && playbackProject !== source.project
+      ? beatToTime(
+          timeToBeat(transport.time - visuals.offset, playbackProject.tempoMap),
+          source.project.tempoMap,
+        )
+      : transport.time - visuals.offset;
+  const exportReady =
+    ready &&
+    !source.busy &&
+    !autoBpm.analyzing &&
+    !(autoBpm.enabled && autoBpm.error);
   const updateVisuals = useCallback(
     (patch: Partial<VisualSettings>) =>
       setVisuals((previous) => ({ ...previous, ...patch })),
@@ -63,9 +85,9 @@ export function Studio() {
     setVisuals((previous) => ({ ...previous, hiddenTracks: [], offset: 0 }));
   };
   const startExport = () => {
-    if (!source.project || !source.audio) return;
+    if (!playbackProject || !source.audio || !exportReady) return;
     transport.pause();
-    void exporter.start(source.project, source.audio, visuals, settings);
+    void exporter.start(playbackProject, source.audio, visuals, settings);
   };
   const errors = [source.error, transport.error, exporter.error].filter(
     Boolean,
@@ -151,6 +173,32 @@ export function Studio() {
             <fieldset className="visual-fieldset" disabled={locked}>
               <VisualPanel settings={visuals} onChange={updateVisuals} />
             </fieldset>
+            <fieldset
+              className="tempo-fieldset"
+              disabled={locked || !ready || source.busy}
+            >
+              <AutoBpmPanel
+                enabled={autoBpm.enabled}
+                analyzing={autoBpm.analyzing}
+                progress={autoBpm.progress}
+                segments={autoBpm.segments}
+                error={autoBpm.error}
+                bpm={bpm}
+                onChange={(enabled) => {
+                  transport.pause();
+                  exporter.clear();
+                  autoBpm.setEnabled(enabled);
+                }}
+                onRetry={autoBpm.retry}
+              />
+            </fieldset>
+            <fieldset className="caption-fieldset" disabled={locked}>
+              <CaptionPanel
+                settings={visuals}
+                name={source.project?.name ?? ""}
+                onChange={updateVisuals}
+              />
+            </fieldset>
           </aside>
           <section className="preview-column" aria-label="可视化工作区">
             <div className="panel preview-panel">
@@ -174,19 +222,23 @@ export function Studio() {
                 </div>
               </div>
               <PreviewCanvas
-                project={source.project}
+                project={playbackProject}
                 settings={visuals}
                 time={transport.time}
               />
               <TransportBar
                 playing={transport.playing}
                 time={source.audio ? transport.time : 0}
+                position={transport.position}
+                seeking={transport.seeking}
                 duration={duration}
                 volume={transport.volume}
                 disabled={!ready || locked || source.busy}
                 onToggle={() => void transport.toggle()}
                 onSeek={transport.seek}
                 onVolume={transport.setVolume}
+                onScrubStart={transport.beginScrub}
+                onScrubEnd={transport.endScrub}
               />
             </div>
             <div className="preview-caption">
@@ -209,16 +261,27 @@ export function Studio() {
                   <strong>{source.project.tracks.length}</strong>
                 </div>
                 <div>
-                  <span>初始速度</span>
+                  <span>
+                    {autoBpm.segments.length
+                      ? "动态速度 · AUTO"
+                      : "MIDI 当前速度"}
+                  </span>
                   <strong>
-                    {Math.round(source.project.bpm)} <small>BPM</small>
+                    {bpm.toFixed(3)} <small>BPM</small>
                   </strong>
                 </div>
                 <div>
-                  <span>音频时长</span>
-                  <strong>{formatTime(duration)}</strong>
+                  <span>音频总时长</span>
+                  <strong>{formatTime(duration, true)}</strong>
                 </div>
               </div>
+            )}
+            {source.project && (
+              <MidiTempoPanel
+                project={source.project}
+                time={midiTime}
+                overridden={autoBpm.segments.length > 0}
+              />
             )}
             {mismatch && (
               <div className="info-banner">
@@ -238,7 +301,7 @@ export function Studio() {
                 settings={settings}
                 duration={duration}
                 time={transport.time}
-                ready={ready && !source.busy}
+                ready={!!exportReady}
                 directSave={directSave}
                 progress={exporter.progress}
                 result={exporter.result}

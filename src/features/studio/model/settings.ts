@@ -25,11 +25,16 @@ export const PALETTES: Record<
 
 export const DEFAULT_VISUALS: VisualSettings = {
   palette: "orbit",
+  globalColor: null,
   lookAhead: 5,
   glow: 0.65,
   keyboard: true,
   particles: true,
+  particleIntensity: 1.4,
   labels: true,
+  title: null,
+  footer: "V I M I D I  /  MUSIC IN MOTION",
+  timestamp: true,
   offset: 0,
   hiddenTracks: [],
   aspect: "16:9",
@@ -50,7 +55,12 @@ export function getDimensions(aspect: AspectRatio, resolution: number) {
   return { width: long, height: resolution };
 }
 
-export function trackColor(trackId: number, palette: PaletteId): string {
+export function trackColor(
+  trackId: number,
+  palette: PaletteId,
+  globalColor?: string | null,
+): string {
+  if (globalColor && /^#[0-9a-f]{6}$/i.test(globalColor)) return globalColor;
   const colors = PALETTES[palette].colors;
   return colors[trackId % colors.length];
 }

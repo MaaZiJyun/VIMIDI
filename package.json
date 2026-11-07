@@ -19,7 +19,8 @@
     "mediabunny": "^1.65.2",
     "next": "16.4.5",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "realtime-bpm-analyzer": "^5.6.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.65.0",
@@ -33,7 +34,8 @@
     "prettier": "^3.9.10",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "vitest": "^4.1.12"
+    "vitest": "^4.1.12",
+    "vite": "8.3.6"
   },
   "type": "module"
 }

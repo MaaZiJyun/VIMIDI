@@ -1,7 +1,11 @@
-import { formatTime, trackColor } from "../model/settings";
+import { trackColor } from "../model/settings";
 import type { MidiNote, MidiProject, VisualSettings } from "../model/types";
 import { queryNotes } from "../midi/query-notes";
 import { pianoLayout, type PianoKey } from "./piano-layout";
+import { noteStyle, lightenColor } from "./note-style";
+import { drawImpact } from "./impact-effects";
+import { drawCaptions } from "./draw-captions";
+import { beatToTime, timeToBeat } from "../tempo/tempo-map";
 
 export interface FrameOptions {
   project: MidiProject;
@@ -35,6 +39,7 @@ export function drawFrame(
     midiTime + settings.lookAhead,
   ).filter((note) => !hidden.has(note.trackId));
   const active = new Map<number, MidiNote>();
+  const accent = trackColor(0, settings.palette, settings.globalColor);
   context.save();
   context.fillStyle = "#101014";
   context.fillRect(0, 0, width, height);
@@ -46,7 +51,7 @@ export function drawFrame(
     strike,
     height,
   );
-  atmosphere.addColorStop(0, "#a575ff0d");
+  atmosphere.addColorStop(0, `${accent}0d`);
   atmosphere.addColorStop(1, "#10101400");
   context.fillStyle = atmosphere;
   context.fillRect(0, 0, width, height);
@@ -62,13 +67,11 @@ export function drawFrame(
     context.lineTo(key.x, strike);
     context.stroke();
   }
-  const beat = 60 / project.bpm;
+  let beat = Math.ceil(timeToBeat(midiTime, project.tempoMap));
   context.strokeStyle = "#ffffff09";
-  for (
-    let second = Math.ceil(midiTime / beat) * beat;
-    second < midiTime + settings.lookAhead;
-    second += beat
-  ) {
+  for (let index = 0; index < 128; index++, beat++) {
+    const second = beatToTime(beat, project.tempoMap);
+    if (second >= midiTime + settings.lookAhead) break;
     const y = strike - (second - midiTime) * speed;
     context.beginPath();
     context.moveTo(0, y);
@@ -83,7 +86,6 @@ export function drawFrame(
   for (const note of visible) {
     const key = byPitch.get(note.pitch);
     if (!key) continue;
-    const color = trackColor(note.trackId, settings.palette);
     const bottom = strike - (note.start - midiTime) * speed;
     const noteHeight = Math.max(5 * scale, note.duration * speed);
     const x = key.x + 1.5 * scale;
@@ -92,18 +94,11 @@ export function drawFrame(
       note.start <= midiTime && note.start + note.duration > midiTime;
     if (isActive) active.set(note.pitch, note);
     if (bottom - noteHeight > strike) continue;
-    const gradient = context.createLinearGradient(
-      0,
-      bottom - noteHeight,
-      0,
-      bottom,
-    );
-    gradient.addColorStop(0, `${color}75`);
-    gradient.addColorStop(1, color);
-    context.fillStyle = gradient;
-    context.globalAlpha = 0.5 + note.velocity * 0.5;
-    context.shadowColor = color;
-    context.shadowBlur = (isActive ? 26 : 12) * settings.glow * scale;
+    const style = noteStyle(note.trackId, isActive, settings);
+    context.fillStyle = style.fill;
+    context.globalAlpha = style.opacity;
+    context.shadowColor = style.color;
+    context.shadowBlur = style.blur * scale;
     context.beginPath();
     context.roundRect(
       x,
@@ -114,57 +109,17 @@ export function drawFrame(
     );
     context.fill();
     context.shadowBlur = 0;
-    context.fillStyle = "#ffffff45";
-    context.fillRect(
-      x + noteWidth * 0.15,
-      bottom - noteHeight + 1,
-      noteWidth * 0.7,
-      scale,
-    );
   }
   context.restore();
 
-  context.strokeStyle = "#a575ff66";
-  context.shadowColor = "#a575ff";
+  context.strokeStyle = `${accent}66`;
+  context.shadowColor = accent;
   context.shadowBlur = 12 * settings.glow;
   context.beginPath();
   context.moveTo(0, strike);
   context.lineTo(width - padding * 2, strike);
   context.stroke();
   context.shadowBlur = 0;
-
-  for (const [pitch, note] of active) {
-    const key = byPitch.get(pitch)!;
-    const color = trackColor(note.trackId, settings.palette);
-    const center = key.x + key.width / 2;
-    const bloom = context.createRadialGradient(
-      center,
-      strike,
-      0,
-      center,
-      strike,
-      45 * scale,
-    );
-    bloom.addColorStop(0, `${color}95`);
-    bloom.addColorStop(1, `${color}00`);
-    context.fillStyle = bloom;
-    context.fillRect(
-      center - 45 * scale,
-      strike - 45 * scale,
-      90 * scale,
-      70 * scale,
-    );
-    if (settings.particles)
-      drawParticles(
-        context,
-        center,
-        strike,
-        midiTime - note.start,
-        pitch,
-        color,
-        scale,
-      );
-  }
 
   if (settings.keyboard)
     drawKeyboard(
@@ -176,48 +131,37 @@ export function drawFrame(
       settings,
       scale,
     );
-  context.restore();
-
-  if (settings.labels) {
-    context.fillStyle = "#fafafa";
-    context.font = `500 ${18 * scale}px system-ui, sans-serif`;
-    const title =
-      project.name.length > 52 ? `${project.name.slice(0, 49)}…` : project.name;
-    context.fillText(title, padding, height * 0.075, width * 0.7);
-    context.fillStyle = "#71717a";
-    context.font = `${10 * scale}px system-ui, sans-serif`;
-    context.fillText("V I M I D I  /  MUSIC IN MOTION", padding, height * 0.95);
-    context.textAlign = "right";
-    context.fillText(formatTime(time), width - padding, height * 0.95);
+  // Merge simultaneous voices on the same key to keep dense orchestral scores responsive.
+  const impacts = new Map(active);
+  if (settings.particles)
+    for (const note of visible) {
+      if (
+        note.start > midiTime &&
+        note.start <= midiTime + 0.12 &&
+        !impacts.has(note.pitch)
+      )
+        impacts.set(note.pitch, note);
+    }
+  for (const note of impacts.values()) {
+    const age = midiTime - note.start;
+    const key = byPitch.get(note.pitch);
+    if (!key) continue;
+    drawImpact(context, {
+      x: key.x + key.width / 2,
+      y: strike,
+      age,
+      seed: note.pitch + note.trackId * 13 + note.start,
+      color: trackColor(note.trackId, settings.palette, settings.globalColor),
+      scale,
+      intensity: settings.particles ? settings.particleIntensity : 0,
+      velocity: note.velocity,
+    });
   }
   context.restore();
-}
 
-function drawParticles(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  age: number,
-  seed: number,
-  color: string,
-  scale: number,
-) {
-  ctx.fillStyle = color;
-  for (let index = 0; index < 7; index++) {
-    const life = (age * 1.8 + index / 7) % 1;
-    const drift = Math.sin(seed * 17 + index * 7) * 24 * scale * life;
-    ctx.globalAlpha = (1 - life) * 0.7;
-    ctx.beginPath();
-    ctx.arc(
-      x + drift,
-      y - life * 65 * scale,
-      (1 - life) * 2 * scale,
-      0,
-      Math.PI * 2,
-    );
-    ctx.fill();
-  }
-  ctx.globalAlpha = 1;
+  if (settings.labels)
+    drawCaptions(context, project, settings, time, width, height);
+  context.restore();
 }
 
 function drawKeyboard(
@@ -234,7 +178,10 @@ function drawKeyboard(
       if (key.black !== black) continue;
       const note = active.get(key.pitch);
       ctx.fillStyle = note
-        ? trackColor(note.trackId, settings.palette)
+        ? lightenColor(
+            trackColor(note.trackId, settings.palette, settings.globalColor),
+            0.3,
+          )
         : black
           ? "#151519"
           : "#d4d4dc";

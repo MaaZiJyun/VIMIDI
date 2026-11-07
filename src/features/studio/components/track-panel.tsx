@@ -56,7 +56,13 @@ export function TrackPanel({
               }
             >
               <i
-                style={{ background: trackColor(track.id, settings.palette) }}
+                style={{
+                  background: trackColor(
+                    track.id,
+                    settings.palette,
+                    settings.globalColor,
+                  ),
+                }}
               />
               <span title={track.name}>{track.name}</span>
               <small>{track.noteCount.toLocaleString()}</small>

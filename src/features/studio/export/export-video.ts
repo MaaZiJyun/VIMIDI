@@ -54,6 +54,7 @@ export async function exportVideo(
   let output: Output | undefined;
   let iterator: AsyncGenerator<AudioSample, void> | undefined;
   let pending: IteratorResult<AudioSample, void> | undefined;
+  let canvas: HTMLCanvasElement | undefined;
   let completed = false;
   try {
     signal.throwIfAborted();
@@ -76,9 +77,18 @@ export async function exportVideo(
       throw new Error(
         "当前浏览器不支持 H.264 / AAC 编码，请在最新版 Chrome 或 Edge 中导出 MP4。",
       );
-    const canvas = document.createElement("canvas");
+    canvas = document.createElement("canvas");
     canvas.width = width;
     canvas.height = height;
+    // Inherit document language and font rasterization, just like the preview canvas.
+    canvas.setAttribute("aria-hidden", "true");
+    Object.assign(canvas.style, {
+      position: "fixed",
+      left: "-100000px",
+      top: "0",
+      pointerEvents: "none",
+    });
+    document.body.append(canvas);
     const context = canvas.getContext("2d", { alpha: false });
     if (!context) throw new Error("无法创建视频画布。");
     const video = new CanvasSource(canvas, {
@@ -156,6 +166,7 @@ export async function exportVideo(
     completed = true;
     return blob;
   } finally {
+    canvas?.remove();
     if (pending && !pending.done) pending.value.close();
     await iterator?.return();
     input.dispose();

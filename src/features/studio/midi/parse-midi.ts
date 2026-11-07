@@ -1,5 +1,6 @@
 import { Midi } from "@tonejs/midi";
 import type { MidiNote, MidiProject } from "../model/types";
+import { normalizeTempoMap } from "../tempo/tempo-map";
 
 export function indexNotes(notes: readonly MidiNote[]): number[] {
   let maxEnd = 0;
@@ -60,10 +61,19 @@ export function parseMidi(data: ArrayBuffer, fileName: string): MidiProject {
     max = Math.max(max, note.pitch);
   }
   const maxEnds = indexNotes(notes);
+  const tempoMap = normalizeTempoMap(
+    midi.header.tempos.map((tempo) => ({
+      time: tempo.time ?? 0,
+      beat: tempo.ticks / midi.header.ppq,
+      bpm: tempo.bpm,
+    })),
+  );
   return {
     name: midi.name.trim() || fileName.replace(/\.midi?$/i, ""),
     duration: maxEnds[maxEnds.length - 1],
-    bpm: midi.header.tempos[0]?.bpm ?? 120,
+    bpm: tempoMap[0].bpm,
+    tempoMap,
+    tempoEventCount: midi.header.tempos.length,
     tracks,
     notes,
     maxEnds,

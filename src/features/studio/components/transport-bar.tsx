@@ -12,23 +12,31 @@ import { IconButton } from "./controls";
 interface TransportBarProps {
   playing: boolean;
   time: number;
+  position: number;
+  seeking: boolean;
   duration: number;
   volume: number;
   disabled: boolean;
   onToggle: () => void;
   onSeek: (time: number) => void;
   onVolume: (volume: number) => void;
+  onScrubStart: () => void;
+  onScrubEnd: () => void;
 }
 
 export function TransportBar({
   playing,
   time,
+  position,
+  seeking,
   duration,
   volume,
   disabled,
   onToggle,
   onSeek,
   onVolume,
+  onScrubStart,
+  onScrubEnd,
 }: TransportBarProps) {
   return (
     <div className="transport">
@@ -39,9 +47,16 @@ export function TransportBar({
         min="0"
         max={duration || 1}
         step="0.01"
-        value={Math.min(time, duration)}
+        value={Math.min(position, duration)}
         disabled={disabled}
         onChange={(event) => onSeek(Number(event.target.value))}
+        onPointerDown={(event) => {
+          event.currentTarget.setPointerCapture(event.pointerId);
+          onScrubStart();
+        }}
+        onPointerUp={onScrubEnd}
+        onPointerCancel={onScrubEnd}
+        onBlur={onScrubEnd}
       />
       <div className="transport-controls">
         <div className="playback-buttons">
@@ -79,6 +94,11 @@ export function TransportBar({
           <strong>{formatTime(time, true)}</strong>
           <span>/</span>
           {formatTime(duration)}
+          {seeking && (
+            <span role="status" aria-label="音频定位状态">
+              定位中…
+            </span>
+          )}
         </div>
         <label className="volume-control">
           <SpeakerWaveIcon />

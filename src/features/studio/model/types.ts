@@ -17,12 +17,29 @@ export interface MidiProject {
   readonly name: string;
   readonly duration: number;
   readonly bpm: number;
+  readonly tempoMap: readonly TempoPoint[];
+  readonly tempoEventCount: number;
   readonly tracks: readonly MidiTrack[];
   readonly notes: readonly MidiNote[];
   /** Monotonic end-time index for efficient overlap queries, including long notes. */
   readonly maxEnds: readonly number[];
   readonly minPitch: number;
   readonly maxPitch: number;
+}
+
+/** Seconds and cumulative quarter-note beats at a tempo change. */
+export interface TempoPoint {
+  readonly time: number;
+  readonly beat: number;
+  readonly bpm: number;
+}
+
+export interface DetectedTempo {
+  readonly start: number;
+  readonly end: number;
+  readonly bpm: number;
+  readonly confidence: number;
+  readonly detected: boolean;
 }
 
 export interface AudioAsset {
@@ -37,11 +54,16 @@ export type AspectRatio = "16:9" | "9:16" | "1:1";
 
 export interface VisualSettings {
   palette: PaletteId;
+  globalColor: string | null;
   lookAhead: number;
   glow: number;
   keyboard: boolean;
   particles: boolean;
+  particleIntensity: number;
   labels: boolean;
+  title: string | null;
+  footer: string;
+  timestamp: boolean;
   offset: number;
   hiddenTracks: number[];
   aspect: AspectRatio;

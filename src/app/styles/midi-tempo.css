@@ -1,0 +1,82 @@
+.midi-tempo-panel .section-heading {
+  margin-bottom: 12px;
+}
+.tempo-source-badge {
+  color: var(--o-color-text-muted);
+  font-size: 9px;
+}
+.tempo-source-badge.is-overridden {
+  color: var(--o-color-warning);
+}
+.midi-tempo-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--o-color-text-muted);
+  font-size: 10px;
+}
+.midi-tempo-summary strong {
+  color: var(--o-color-text);
+  font: 17px var(--o-font-mono);
+  white-space: nowrap;
+}
+.midi-tempo-summary small {
+  font-size: 9px;
+  color: var(--o-color-text-muted);
+}
+.midi-tempo-panel figure {
+  margin: 14px 0 0;
+}
+.midi-tempo-curve {
+  display: block;
+  width: 100%;
+  height: 110px;
+  background: var(--o-color-surface-subtle);
+  border-radius: 7px;
+  color: var(--o-color-info);
+}
+.tempo-grid-line {
+  stroke: var(--o-color-border);
+  stroke-width: 0.5;
+}
+.tempo-playhead {
+  stroke: var(--o-color-text);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+  opacity: 0.6;
+}
+.midi-tempo-panel figcaption {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 7px;
+  color: var(--o-color-text-muted);
+  font: 9px var(--o-font-mono);
+}
+@media (max-width: 720px) {
+  .midi-tempo-panel {
+    grid-row: 5;
+  }
+  .info-banner {
+    grid-row: 6;
+  }
+  .visual-fieldset {
+    grid-row: 7;
+  }
+  .tempo-fieldset {
+    grid-row: 8;
+  }
+  .caption-fieldset {
+    grid-row: 9;
+  }
+  .below-preview {
+    grid-row: 10;
+  }
+  .midi-tempo-summary {
+    align-items: flex-start;
+  }
+  .midi-tempo-summary > span {
+    max-width: 65%;
+  }
+}
