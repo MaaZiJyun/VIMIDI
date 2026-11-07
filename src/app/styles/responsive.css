@@ -1,0 +1,139 @@
+@media (min-width: 1450px) {
+  .workspace-grid {
+    grid-template-columns: 320px minmax(0, 1fr);
+    gap: 28px;
+  }
+  .panel {
+    padding: 23px;
+  }
+  .preview-panel {
+    padding: 0;
+  }
+}
+@media (max-width: 1000px) {
+  .app-header {
+    padding: 0 24px;
+  }
+  .studio-main {
+    padding: 28px 24px 0;
+  }
+  .workspace-grid {
+    grid-template-columns: 260px minmax(0, 1fr);
+    gap: 16px;
+  }
+  .panel {
+    padding: 16px;
+  }
+  .preview-panel {
+    padding: 0;
+  }
+  .below-preview {
+    grid-template-columns: 1fr;
+  }
+  .workflow-note {
+    display: none;
+  }
+  .preview-empty p {
+    font-size: 9px;
+  }
+  .empty-hint {
+    font-size: 8px;
+    margin-top: 15px;
+  }
+  .transport-controls {
+    gap: 5px;
+  }
+  .volume-control input {
+    width: 40px;
+  }
+  .preview-caption span:last-child {
+    display: none;
+  }
+  .project-stats > div {
+    padding: 0 10px;
+  }
+}
+@media (max-width: 720px) {
+  .app-header {
+    padding: 0 18px;
+    height: 62px;
+    gap: 16px;
+  }
+  .header-title,
+  .header-divider,
+  .local-badge,
+  .brand-label {
+    display: none;
+  }
+  .studio-main {
+    padding: 25px 16px 0;
+  }
+  .workspace-heading {
+    align-items: flex-start;
+  }
+  .workspace-heading > .button {
+    display: none;
+  }
+  .workspace-heading h1 {
+    font-size: 22px;
+  }
+  .workspace-grid {
+    grid-template-columns: 1fr;
+  }
+  .settings-column {
+    display: contents;
+  }
+  .preview-column {
+    display: contents;
+  }
+  .import-panel {
+    grid-row: 1;
+  }
+  .preview-panel {
+    grid-row: 2;
+  }
+  .preview-caption {
+    grid-row: 3;
+    margin-top: -7px;
+  }
+  .project-stats {
+    grid-row: 4;
+  }
+  .info-banner {
+    grid-row: 5;
+  }
+  .visual-fieldset {
+    grid-row: 6;
+  }
+  .below-preview {
+    grid-row: 7;
+  }
+  .drop-zone {
+    min-height: 145px;
+  }
+  .asset-list {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .preview-empty {
+    min-height: 230px;
+  }
+  .preview-empty p {
+    font-size: 10px;
+  }
+  .empty-hint {
+    font-size: 9px;
+  }
+  .palette-option {
+    padding-top: 14px;
+    padding-bottom: 12px;
+  }
+  .visual-panel .range-field {
+    margin: 23px 0;
+  }
+  .app-footer {
+    align-items: flex-start;
+    flex-direction: column;
+    margin-top: 24px;
+  }
+}

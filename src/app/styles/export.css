@@ -1,0 +1,154 @@
+.project-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border: 1px solid var(--o-color-border);
+  border-radius: 10px;
+  padding: 17px 0;
+  background: var(--o-color-surface);
+}
+.project-stats > div {
+  display: grid;
+  gap: 5px;
+  padding: 0 20px;
+  border-right: 1px solid var(--o-color-border);
+}
+.project-stats > div:last-child {
+  border: 0;
+}
+.project-stats span {
+  font-size: 9px;
+  color: var(--o-color-text-muted);
+}
+.project-stats strong {
+  font: 18px var(--o-font-mono);
+  letter-spacing: -1px;
+}
+.project-stats small {
+  font-size: 8px;
+  color: var(--o-color-text-muted);
+  letter-spacing: 0;
+}
+.below-preview {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+.muted-icon {
+  color: var(--o-color-text-muted);
+  width: 15px;
+  height: 15px;
+}
+.two-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.two-fields .field-label {
+  margin-bottom: 14px;
+}
+.two-fields select {
+  display: block;
+  width: 100%;
+  padding: 8px;
+  margin-top: 7px;
+  font-size: 10px;
+}
+.range-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 5px;
+}
+.range-heading > div {
+  display: flex;
+  gap: 9px;
+}
+.range-heading .field-label {
+  margin: 0;
+}
+.range-heading .text-button {
+  font-size: 9px;
+}
+.time-inputs {
+  margin-top: 8px;
+  margin-bottom: 15px;
+}
+.time-inputs label {
+  font-size: 9px;
+  color: var(--o-color-text-muted);
+}
+.time-inputs input {
+  width: 100%;
+  padding: 7px 8px;
+  margin-top: 5px;
+  font: 11px var(--o-font-mono);
+}
+.export-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 9px;
+  color: var(--o-color-text-muted);
+  padding-top: 14px;
+  border-top: 1px solid var(--o-color-border);
+  margin-top: 14px;
+}
+.export-summary i {
+  margin: 0 4px;
+  font-style: normal;
+}
+.export-summary span:last-child {
+  font-family: var(--o-font-mono);
+}
+.export-button {
+  width: 100%;
+  margin-top: 13px;
+}
+.export-button > span {
+  margin-left: auto;
+}
+.export-button > svg {
+  width: 14px;
+  height: 14px;
+}
+.export-progress {
+  margin-top: 15px;
+}
+.export-progress > div {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+}
+.export-progress progress {
+  display: block;
+  width: 100%;
+  height: 5px;
+  accent-color: var(--o-color-grape);
+  margin: 10px 0;
+}
+.export-progress .button {
+  width: 100%;
+}
+.export-success {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  background: #12e6c810;
+  padding: 10px;
+  border-radius: 6px;
+  margin-top: 12px;
+}
+.export-success > svg {
+  color: #12b99f;
+}
+.export-success strong {
+  font-weight: 500;
+  display: block;
+}
+.export-success .text-button,
+.export-success > div > span {
+  font-size: 9px;
+  margin-top: 3px;
+}

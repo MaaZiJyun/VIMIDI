@@ -39,3 +39,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Local source media and browser artifacts
+/*.mid
+/*.midi
+/*.mp3
+/*.wav
+/test-results/
+/playwright-report/

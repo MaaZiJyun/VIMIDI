@@ -1,0 +1,98 @@
+.section-heading,
+.section-heading > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.section-heading {
+  margin-bottom: 20px;
+}
+.section-heading > div {
+  justify-content: flex-start;
+}
+.section-heading h2 {
+  font-weight: 600;
+  font-size: 13px;
+  margin: 0;
+}
+.step-number {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--o-color-border);
+  border-radius: 6px;
+  font-family: var(--o-font-mono);
+  font-size: 9px;
+  color: var(--o-color-text-muted);
+}
+.tag {
+  border-radius: 5px;
+  background: var(--o-color-surface-muted);
+  color: var(--o-color-text-muted);
+  font-size: 9px;
+  padding: 3px 6px;
+  font-weight: 500;
+}
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 37px;
+  border-radius: 8px;
+  padding: 8px 13px;
+  border: 1px solid var(--o-color-border);
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.button--secondary {
+  background: var(--o-color-surface);
+  color: var(--o-color-text);
+}
+.button--primary {
+  background: var(--o-color-accent);
+  color: var(--o-color-accent-contrast);
+  border-color: var(--o-color-accent);
+}
+.button--ghost {
+  background: transparent;
+  color: var(--o-color-text);
+  border-color: transparent;
+}
+.button:hover:not(:disabled) {
+  filter: brightness(0.94);
+}
+.icon-button {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  background: transparent;
+  border: 0;
+  border-radius: 7px;
+  color: var(--o-color-text-muted);
+}
+.icon-button:hover:not(:disabled) {
+  background: var(--o-color-surface-muted);
+  color: var(--o-color-text);
+}
+.text-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--o-color-text-muted);
+  font-size: 10px;
+}
+.text-button:hover:not(:disabled) {
+  color: var(--o-color-text);
+}
+.text-button svg {
+  width: 12px;
+  height: 12px;
+}
