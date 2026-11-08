@@ -61,6 +61,7 @@ export function TrackPanel({
                     track.id,
                     settings.palette,
                     settings.globalColor,
+                    settings.backgroundColors,
                   ),
                 }}
               />

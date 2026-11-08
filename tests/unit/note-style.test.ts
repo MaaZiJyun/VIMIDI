@@ -24,4 +24,21 @@ describe("uniform notes and contact brightness", () => {
     expect(trackColor(0, "orbit")).not.toBe(trackColor(1, "orbit"));
     expect(trackColor(0, "orbit", "invalid")).toBe(trackColor(0, "orbit"));
   });
+  it("cycles the image palette per track and allows a global override", () => {
+    const settings = {
+      ...DEFAULT_VISUALS,
+      palette: "image" as const,
+      backgroundColors: ["#ff3d3d", "#3dff3d", "#3d3dff"],
+    };
+    for (const trackId of [0, 1, 2, 3, 7]) {
+      expect(noteStyle(trackId, false, settings).color).toBe(
+        settings.backgroundColors[trackId % 3],
+      );
+      expect(
+        noteStyle(trackId, false, { ...settings, globalColor: "#336699" })
+          .color,
+      ).toBe("#336699");
+    }
+    expect(trackColor(0, "image", null, [])).toBe(trackColor(0, "orbit"));
+  });
 });

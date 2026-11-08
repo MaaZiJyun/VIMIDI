@@ -6,7 +6,7 @@ import type {
 } from "./types";
 
 export const PALETTES: Record<
-  PaletteId,
+  Exclude<PaletteId, "image">,
   { name: string; colors: readonly string[] }
 > = {
   orbit: {
@@ -24,6 +24,10 @@ export const PALETTES: Record<
 };
 
 export const DEFAULT_VISUALS: VisualSettings = {
+  backgroundImage: null,
+  backgroundDim: 0.35,
+  backgroundAutoColor: true,
+  backgroundColors: [],
   palette: "orbit",
   globalColor: null,
   lookAhead: 5,
@@ -59,9 +63,13 @@ export function trackColor(
   trackId: number,
   palette: PaletteId,
   globalColor?: string | null,
+  backgroundColors: readonly string[] = [],
 ): string {
   if (globalColor && /^#[0-9a-f]{6}$/i.test(globalColor)) return globalColor;
-  const colors = PALETTES[palette].colors;
+  const colors =
+    palette === "image" && backgroundColors.length
+      ? backgroundColors
+      : PALETTES[palette === "image" ? "orbit" : palette].colors;
   return colors[trackId % colors.length];
 }
 

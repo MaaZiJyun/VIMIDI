@@ -17,7 +17,12 @@ export function noteStyle(
   active: boolean,
   settings: VisualSettings,
 ) {
-  const color = trackColor(trackId, settings.palette, settings.globalColor);
+  const color = trackColor(
+    trackId,
+    settings.palette,
+    settings.globalColor,
+    settings.backgroundColors,
+  );
   return {
     color,
     fill: active ? lightenColor(color, 0.32) : color,

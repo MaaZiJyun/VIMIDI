@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { visualFixtures, tempoFixtures } from "./feature-fixtures";
+import { pianoLayout } from "../../src/features/studio/render/piano-layout";
 
 async function ready(page: Page, files: ReturnType<typeof visualFixtures>) {
   await page.goto("/");
@@ -57,25 +58,37 @@ test("uses solid notes, bright contact, global color, and customized exported ca
     "background-color",
     "rgb(255, 85, 51)",
   );
+  await page.getByRole("slider", { name: "辉光强度" }).fill("0");
+  await page.getByRole("switch", { name: "音符粒子", exact: true }).uncheck();
   const canvas = page.getByLabel("MIDI 音符可视化预览");
-  const inactive = await canvas.evaluate((element: HTMLCanvasElement) => {
+  const sampledKey = pianoLayout(21, 108, 1280 * 0.76).find(
+    (key) => key.pitch === 62,
+  )!;
+  const sampleLeft = Math.round(
+    1280 * 0.12 + sampledKey.x + sampledKey.width / 2,
+  );
+  const inactive = await canvas.evaluate((element: HTMLCanvasElement, left) => {
     const ctx = element.getContext("2d")!;
     return [
-      Array.from(ctx.getImageData(182, 493, 1, 1).data),
-      Array.from(ctx.getImageData(182, 510, 1, 1).data),
+      Array.from(ctx.getImageData(left, 493, 1, 1).data),
+      Array.from(ctx.getImageData(left, 500, 1, 1).data),
     ];
-  });
+  }, sampleLeft);
   for (let channel = 0; channel < 3; channel++)
     expect(
       Math.abs(inactive[0][channel] - inactive[1][channel]),
     ).toBeLessThanOrEqual(2);
   await page.getByLabel("播放进度").fill("0.5");
-  const active = await canvas.evaluate((element: HTMLCanvasElement) =>
-    Array.from(element.getContext("2d")!.getImageData(182, 549, 1, 1).data),
-  );
-  expect(active[0] + active[1] + active[2]).toBeGreaterThan(
-    inactive[0][0] + inactive[0][1] + inactive[0][2] + 100,
-  );
+  await expect
+    .poll(() =>
+      canvas.evaluate((element: HTMLCanvasElement, left) => {
+        const pixel = element
+          .getContext("2d")!
+          .getImageData(left, 549, 1, 1).data;
+        return pixel[0] + pixel[1] + pixel[2];
+      }, sampleLeft),
+    )
+    .toBeGreaterThan(inactive[0][0] + inactive[0][1] + inactive[0][2] + 100);
   await page.getByLabel("视频标题", { exact: true }).fill("My MIDI Video");
   await page.getByLabel("视频页脚", { exact: true }).fill("Music by domuki");
   await page.getByLabel("导出终点").fill("0.5");

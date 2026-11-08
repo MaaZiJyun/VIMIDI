@@ -6,6 +6,7 @@ import {
 import type { MidiProject, VisualSettings } from "../model/types";
 import { getDimensions } from "../model/settings";
 import { drawFrame } from "../render/draw-frame";
+import { drawBackground } from "../render/background";
 import { IconButton } from "./controls";
 
 interface PreviewCanvasProps {
@@ -28,11 +29,13 @@ export function PreviewCanvas({ project, settings, time }: PreviewCanvasProps) {
         width: dimensions.width,
         height: dimensions.height,
       });
+    else if (context)
+      drawBackground(context, settings, dimensions.width, dimensions.height);
   }, [project, settings, time, dimensions.width, dimensions.height]);
 
   return (
     <div className="preview-stage" ref={container}>
-      {project ? (
+      {project || settings.backgroundImage ? (
         <canvas
           ref={canvas}
           width={dimensions.width}

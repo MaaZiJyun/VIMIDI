@@ -49,10 +49,19 @@ export interface AudioAsset {
   readonly duration: number;
 }
 
-export type PaletteId = "orbit" | "mint" | "sunset";
+export type PaletteId = "orbit" | "mint" | "sunset" | "image";
 export type AspectRatio = "16:9" | "9:16" | "1:1";
 
+export interface BackgroundImageAsset {
+  readonly name: string;
+  readonly image: HTMLImageElement;
+}
+
 export interface VisualSettings {
+  backgroundImage: BackgroundImageAsset | null;
+  backgroundDim: number;
+  backgroundAutoColor: boolean;
+  backgroundColors: string[];
   palette: PaletteId;
   globalColor: string | null;
   lookAhead: number;

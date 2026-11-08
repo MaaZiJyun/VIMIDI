@@ -2,6 +2,7 @@ import { PALETTES } from "../model/settings";
 import type { PaletteId, VisualSettings } from "../model/types";
 import { SectionHeading, Toggle } from "./controls";
 import { ColorControl } from "./color-control";
+import { BackgroundControl } from "./background-control";
 
 interface VisualPanelProps {
   settings: VisualSettings;
@@ -14,13 +15,14 @@ export function VisualPanel({ settings, onChange }: VisualPanelProps) {
       <SectionHeading number="02" title="视觉样式">
         <span className="tag">钢琴瀑布</span>
       </SectionHeading>
+      <BackgroundControl settings={settings} onChange={onChange} />
       <label className="field-label">音符配色</label>
       <div className="palette-options">
         {Object.entries(PALETTES).map(([id, palette]) => (
           <button
             key={id}
-            className={`palette-option ${settings.palette === id ? "is-selected" : ""}`}
-            aria-pressed={settings.palette === id}
+            className={`palette-option ${settings.palette === id && !settings.globalColor ? "is-selected" : ""}`}
+            aria-pressed={settings.palette === id && !settings.globalColor}
             onClick={() =>
               onChange({ palette: id as PaletteId, globalColor: null })
             }
@@ -34,6 +36,22 @@ export function VisualPanel({ settings, onChange }: VisualPanelProps) {
           </button>
         ))}
       </div>
+      {settings.backgroundColors.length > 0 && (
+        <button
+          type="button"
+          className={`palette-option image-palette-option ${settings.palette === "image" && !settings.globalColor ? "is-selected" : ""}`}
+          aria-label="使用背景配色"
+          aria-pressed={settings.palette === "image" && !settings.globalColor}
+          onClick={() => onChange({ palette: "image", globalColor: null })}
+        >
+          <span className="palette-dots" aria-hidden="true">
+            {settings.backgroundColors.map((color) => (
+              <i key={color} style={{ background: color }} title={color} />
+            ))}
+          </span>
+          <span>背景配色 · {settings.backgroundColors.length} 色</span>
+        </button>
+      )}
       <ColorControl settings={settings} onChange={onChange} />
       <label className="range-field">
         <span>

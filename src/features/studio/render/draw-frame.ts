@@ -2,10 +2,11 @@ import { trackColor } from "../model/settings";
 import type { MidiNote, MidiProject, VisualSettings } from "../model/types";
 import { queryNotes } from "../midi/query-notes";
 import { pianoLayout, type PianoKey } from "./piano-layout";
-import { noteStyle, lightenColor } from "./note-style";
+import { noteStyle } from "./note-style";
 import { drawImpact } from "./impact-effects";
 import { drawCaptions } from "./draw-captions";
 import { beatToTime, timeToBeat } from "../tempo/tempo-map";
+import { drawBackground } from "./background";
 
 export interface FrameOptions {
   project: MidiProject;
@@ -21,10 +22,10 @@ export function drawFrame(
 ): void {
   const { project, settings, time, width, height } = options;
   const scale = height / 720;
-  const padding = width * 0.045;
+  const padding = width * 0.12;
   const keys = pianoLayout(
-    project.minPitch,
-    project.maxPitch,
+    Math.min(21, project.minPitch),
+    Math.max(108, project.maxPitch),
     width - padding * 2,
   );
   const byPitch = new Map(keys.map((key) => [key.pitch, key]));
@@ -39,10 +40,14 @@ export function drawFrame(
     midiTime + settings.lookAhead,
   ).filter((note) => !hidden.has(note.trackId));
   const active = new Map<number, MidiNote>();
-  const accent = trackColor(0, settings.palette, settings.globalColor);
+  const accent = trackColor(
+    0,
+    settings.palette,
+    settings.globalColor,
+    settings.backgroundColors,
+  );
   context.save();
-  context.fillStyle = "#101014";
-  context.fillRect(0, 0, width, height);
+  drawBackground(context, settings, width, height);
   const atmosphere = context.createRadialGradient(
     width * 0.5,
     strike,
@@ -127,7 +132,7 @@ export function drawFrame(
       keys,
       active,
       strike + 2 * scale,
-      height * 0.1,
+      Math.min(height * 0.11, width * 0.06),
       settings,
       scale,
     );
@@ -151,7 +156,12 @@ export function drawFrame(
       y: strike,
       age,
       seed: note.pitch + note.trackId * 13 + note.start,
-      color: trackColor(note.trackId, settings.palette, settings.globalColor),
+      color: trackColor(
+        note.trackId,
+        settings.palette,
+        settings.globalColor,
+        settings.backgroundColors,
+      ),
       scale,
       intensity: settings.particles ? settings.particleIntensity : 0,
       velocity: note.velocity,
@@ -177,34 +187,43 @@ function drawKeyboard(
     for (const key of keys) {
       if (key.black !== black) continue;
       const note = active.get(key.pitch);
-      ctx.fillStyle = note
-        ? lightenColor(
-            trackColor(note.trackId, settings.palette, settings.globalColor),
-            0.3,
+      const tint = note
+        ? trackColor(
+            note.trackId,
+            settings.palette,
+            settings.globalColor,
+            settings.backgroundColors,
           )
-        : black
-          ? "#151519"
-          : "#d4d4dc";
+        : null;
+      const keyLeft = key.x + scale * 0.5;
+      const keyWidth = Math.max(1, key.width - scale);
       const keyHeight = height * (black ? 0.62 : 1);
+      ctx.save();
       ctx.beginPath();
-      ctx.roundRect(
-        key.x + scale * 0.5,
-        y,
-        Math.max(1, key.width - scale),
-        keyHeight,
-        [0, 0, 2 * scale, 2 * scale],
-      );
+      ctx.roundRect(keyLeft, y, keyWidth, keyHeight, [
+        0,
+        0,
+        0.75 * scale,
+        0.75 * scale,
+      ]);
+      ctx.fillStyle = tint
+        ? `${tint}${black ? "52" : "45"}`
+        : black
+          ? "#03050a70"
+          : "#eef2f514";
       ctx.fill();
-      if (!black && key.pitch % 12 === 0) {
-        ctx.fillStyle = "#71717a";
-        ctx.font = `${8 * scale}px system-ui`;
-        ctx.textAlign = "center";
-        ctx.fillText(
-          `C${Math.floor(key.pitch / 12) - 1}`,
-          key.x + key.width / 2,
-          y + keyHeight - 8 * scale,
-        );
+      ctx.strokeStyle = tint ? `${tint}99` : "#ffffff16";
+      ctx.lineWidth = 0.65 * scale;
+      ctx.beginPath();
+      if (tint || black) {
+        ctx.moveTo(keyLeft, y + 0.5 * scale);
+        ctx.lineTo(keyLeft + keyWidth, y + 0.5 * scale);
+      } else {
+        ctx.moveTo(keyLeft, y + scale);
+        ctx.lineTo(keyLeft, y + keyHeight - scale);
       }
+      ctx.stroke();
+      ctx.restore();
     }
   }
 }

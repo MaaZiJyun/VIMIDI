@@ -30,6 +30,15 @@ describe("export timing and geometry", () => {
     expect(keys[1]).toMatchObject({ black: true, x: 70, width: 60 });
     expect(keys[11].x + keys[11].width).toBe(700);
   });
+  it("keeps the standard 88-key keyboard slender and aligned", () => {
+    const keys = pianoLayout(21, 108, 1280 * 0.76);
+    const whiteKeys = keys.filter((key) => !key.black);
+    expect(keys).toHaveLength(88);
+    expect(whiteKeys).toHaveLength(52);
+    expect(whiteKeys[0].width).toBeCloseTo(18.71, 2);
+    expect(keys[0].x).toBe(0);
+    expect(keys.at(-1)!.x + keys.at(-1)!.width).toBeCloseTo(1280 * 0.76);
+  });
   it("formats long recordings and invalid input", () => {
     expect(formatTime(3677.77)).toBe("61:17");
     expect(formatTime(NaN)).toBe("00:00");
